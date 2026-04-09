@@ -2508,13 +2508,63 @@ function getDemoPlayerStats() {
 }
 
 // =============================================================================
+// STATIC DATA LOADING (from fetch.py output)
+// =============================================================================
+
+async function loadStaticData() {
+  try {
+    const res = await fetch('/data.json');
+    if (!res.ok) return false;
+    const raw = await res.json();
+    if (!raw.events || !raw.events.length) return false;
+
+    console.log(`Static data.json found (${raw.events.length} events, fetched ${raw.fetched_at})`);
+
+    // Normalize events into fixtures
+    state.fixtures = raw.events.map(normalizeSofaEvent);
+    state.fixtures.sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date));
+
+    // Normalize lineups into playerStats
+    for (const fixture of state.fixtures) {
+      const fid = fixture.fixture.id;
+      const lineup = raw.lineups?.[String(fid)];
+      if (lineup) {
+        const psgIsHome = fixture.teams.home.id === PSG_ID;
+        state.playerStats[fid] = normalizeSofaPlayerStats(lineup, psgIsHome);
+      }
+    }
+
+    // Normalize squad info
+    if (raw.squad?.players) {
+      for (const entry of raw.squad.players) {
+        const p = entry.player;
+        if (p?.id) {
+          state.squadInfo[p.id] = {
+            totalApps: entry.statistics?.appearances || 0,
+            totalGoals: entry.statistics?.goals || 0,
+            totalAssists: entry.statistics?.assists || 0,
+            fullName: p.name,
+            nationality: p.country?.name || '',
+            shirtNumber: p.shirtNumber || '',
+            position: p.position,
+          };
+        }
+      }
+    }
+
+    return true;
+  } catch (e) {
+    console.warn('No static data.json available:', e.message);
+    return false;
+  }
+}
+
+// =============================================================================
 // APP INIT
 // =============================================================================
 
 async function initApp() {
-  // Set season selector to match state
   document.getElementById('season-select').value = state.selectedSeason;
-
   document.getElementById('api-setup').classList.add('hidden');
   document.getElementById('view-matches').classList.remove('hidden');
 
@@ -2528,10 +2578,15 @@ async function initApp() {
         state.playerStats[f.fixture.id] = getDemoPlayerStats();
       });
     } else {
-      await fetchFixtures();
+      // Try static data first (from fetch.py), fall back to live API
+      const hasStatic = await loadStaticData();
+      if (!hasStatic) {
+        await fetchFixtures();
+      }
     }
 
     renderMatches();
+    buildAllPlayerData();
 
     if (state.demoMode) {
       if (!document.querySelector('.demo-banner')) {
@@ -2542,12 +2597,15 @@ async function initApp() {
       }
     }
 
-    toast(`${state.fixtures.length} matchs trouves. Chargement des stats joueurs...`);
-
-    // Auto-load squad info + player stats in parallel
-    if (!state.demoMode) {
-      fetchSquadInfo(); // non-blocking, for total appearances
-      autoLoadAllPlayerStats();
+    const statsLoaded = Object.keys(state.playerStats).length;
+    if (statsLoaded > 0) {
+      toast(`${state.fixtures.length} matchs, ${statsLoaded} avec stats joueurs. Allez Paris !`);
+    } else {
+      toast(`${state.fixtures.length} matchs trouves. Chargement des stats joueurs...`);
+      if (!state.demoMode) {
+        fetchSquadInfo();
+        autoLoadAllPlayerStats();
+      }
     }
   } catch (e) {
     matchesContainer.innerHTML = `<p style="color:var(--psg-red)">Erreur : ${e.message}</p>
