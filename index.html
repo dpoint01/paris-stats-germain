@@ -59,46 +59,36 @@
     /* ========== HEADER / HERO ========== */
     .hero {
       position: relative;
-      background: linear-gradient(135deg, var(--psg-navy-dark) 0%, var(--psg-navy) 50%, var(--psg-navy-dark) 100%);
+      background: var(--psg-navy);
       padding: 1.5rem 2rem 1.2rem;
       text-align: center;
       overflow: hidden;
+      border-bottom: 4px solid var(--psg-red);
     }
 
-    /* Animated Hechter stripe */
+    /* Hechter center red stripe */
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%; bottom: -50%;
+      top: 0; bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 120px;
-      background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(218, 41, 28, 0.15) 20%,
-        rgba(218, 41, 28, 0.3) 50%,
-        rgba(218, 41, 28, 0.15) 80%,
-        transparent 100%
-      );
+      width: 90px;
+      background: var(--psg-red);
+      opacity: 0.25;
       pointer-events: none;
-      animation: stripeGlow 4s ease-in-out infinite alternate;
     }
 
-    @keyframes stripeGlow {
-      0% { opacity: 0.5; width: 100px; }
-      100% { opacity: 1; width: 140px; }
-    }
-
-    /* Side trim */
+    /* Hechter white trim lines */
     .hero::after {
       content: '';
       position: absolute;
       top: 0; bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 130px;
-      border-left: 1px solid rgba(255,255,255,0.08);
-      border-right: 1px solid rgba(255,255,255,0.08);
+      width: 100px;
+      border-left: 2px solid rgba(255,255,255,0.12);
+      border-right: 2px solid rgba(255,255,255,0.12);
       pointer-events: none;
     }
 
@@ -987,7 +977,7 @@
 
   <!-- ========== HERO ========== -->
   <header class="hero">
-    <div style="position:relative;z-index:1;margin-bottom:0.3rem"><img src="/logo.png" alt="Ligue des Pieds Carres" style="width:70px;height:70px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5))"></div>
+    <div style="position:relative;z-index:1;margin-bottom:0.3rem"><img src="/logo.png" alt="Ligue des Pieds Carres" style="width:65px;height:65px;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6));mix-blend-mode:lighten;opacity:0.9"></div>
     <div class="hero-title">PARIS <span>STATS</span>-GERMAIN</div>
     <div class="hero-subtitle">By Ligue des Pieds Carres</div>
     <div class="hero-tagline">Champions mon frere.</div>
@@ -1656,7 +1646,6 @@ async function openMatch(fixtureId) {
 
   const headerEl = document.getElementById('match-detail-header');
   const playersEl = document.getElementById('match-players-container');
-  const away = fixture.teams.away;
   const score = fixture.goals;
   const comp = COMP_NAMES[fixture.league.id] || { name: fixture.league.name, cls: 'other' };
   const date = new Date(fixture.fixture.date);
