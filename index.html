@@ -59,78 +59,114 @@
     /* ========== HEADER / HERO ========== */
     .hero {
       position: relative;
-      background: var(--psg-navy);
-      padding: 1.5rem 2rem 1.2rem;
+      background: linear-gradient(180deg, var(--psg-navy) 0%, var(--psg-navy-dark) 100%);
+      padding: 1.2rem 2rem 1rem;
       text-align: center;
       overflow: hidden;
-      border-bottom: 4px solid var(--psg-red);
     }
 
-    /* Hechter center red stripe */
+    /* Animated Hechter stripe */
     .hero::before {
       content: '';
       position: absolute;
-      top: 0; bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90px;
-      background: var(--psg-red);
-      opacity: 0.25;
-      pointer-events: none;
-    }
-
-    /* Hechter white trim lines */
-    .hero::after {
-      content: '';
-      position: absolute;
-      top: 0; bottom: 0;
+      top: -20%; bottom: -20%;
       left: 50%;
       transform: translateX(-50%);
       width: 100px;
-      border-left: 2px solid rgba(255,255,255,0.12);
-      border-right: 2px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, transparent, rgba(218,41,28,0.2) 30%, rgba(218,41,28,0.35) 50%, rgba(218,41,28,0.2) 70%, transparent);
+      pointer-events: none;
+      animation: heroPulse 6s ease-in-out infinite alternate;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.08);
       pointer-events: none;
     }
 
-    .hero-title {
-      font-family: 'Oswald', Impact, sans-serif;
-      font-size: 2.6rem;
-      font-weight: 600;
-      letter-spacing: 6px;
-      color: var(--retro-cream);
+    @keyframes heroPulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .hero-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
       position: relative;
       z-index: 1;
+    }
+
+    .hero-logo {
+      width: 52px; height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+      animation: logoFloat 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoFloat {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-3px); }
+    }
+
+    .hero-text { text-align: left; }
+
+    .hero-title {
+      font-family: 'Oswald', Impact, sans-serif;
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: var(--retro-cream);
       text-transform: uppercase;
       line-height: 1;
     }
 
     .hero-title span {
       color: var(--psg-red);
-      text-shadow: 0 0 30px rgba(218, 41, 28, 0.6);
-    }
-
-    .hero-subtitle {
-      font-family: 'Oswald', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-top: 0.3rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      position: relative;
-      z-index: 1;
+      text-shadow: 0 0 25px rgba(218, 41, 28, 0.5);
     }
 
     .hero-tagline {
       font-family: 'Oswald', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 400;
       color: var(--psg-gold);
-      margin-top: 0.4rem;
+      margin-top: 0.2rem;
       letter-spacing: 3px;
       text-transform: uppercase;
-      position: relative;
-      z-index: 1;
+    }
+
+    .om-btn {
+      position: absolute;
+      top: 50%; right: 1.5rem;
+      transform: translateY(-50%);
+      z-index: 2;
+      background: linear-gradient(135deg, #2FAEE0, #009DDC);
+      color: white;
+      border: none;
+      padding: 0.35rem 0.8rem;
+      border-radius: 3px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(47,174,224,0.3);
+    }
+
+    .om-btn:hover {
+      background: linear-gradient(135deg, #009DDC, #0077B6);
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 4px 15px rgba(47,174,224,0.4);
     }
 
     /* ========== NAV TABS ========== */
@@ -138,35 +174,41 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.6rem 1.5rem;
-      background: #1a1a2e;
-      border-bottom: 2px solid var(--psg-red);
-      flex-wrap: wrap;
+      gap: 0;
+      padding: 0;
+      background: #111827;
       position: sticky;
       top: 0;
       z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
     }
 
     .nav-tab {
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--retro-cream);
-      padding: 0.45rem 1.2rem;
-      border-radius: 2px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      padding: 0.7rem 1.4rem;
       cursor: pointer;
       font-family: 'Oswald', sans-serif;
       font-size: 0.8rem;
       font-weight: 500;
       letter-spacing: 2px;
       text-transform: uppercase;
-      transition: all 0.2s;
+      transition: all 0.25s;
+      position: relative;
     }
 
-    .nav-tab:hover { color: var(--retro-cream); }
+    .nav-tab:hover {
+      color: var(--retro-cream);
+      background: rgba(255,255,255,0.03);
+    }
+
     .nav-tab.active {
-      background: var(--psg-red);
-      color: white;
+      color: var(--psg-red);
+      border-bottom-color: var(--psg-red);
+      background: transparent;
     }
 
     /* ========== MAIN CONTENT ========== */
@@ -719,11 +761,15 @@
 
     /* Mobile */
     @media (max-width: 600px) {
-      .hero { padding: 1rem 0.8rem 0.8rem; }
-      .hero-title { font-size: 1.6rem; letter-spacing: 3px; }
-      .hero-subtitle { font-size: 0.6rem; letter-spacing: 2px; }
-      .hero-tagline { font-size: 0.6rem; }
+      .hero { padding: 0.8rem 0.6rem 0.6rem; }
+      .hero-inner { gap: 0.6rem; }
+      .hero-logo { width: 40px; height: 40px; }
+      .hero-title { font-size: 1.3rem; letter-spacing: 3px; }
+      .hero-tagline { font-size: 0.55rem; }
       .hero::before, .hero::after { display: none; }
+      .om-btn { position: static; transform: none; margin-top: 0.4rem; display: inline-block; font-size: 0.5rem; padding: 0.25rem 0.6rem; }
+      .om-btn:hover { transform: none; }
+      .hero-inner { flex-wrap: wrap; }
 
       .nav-tabs {
         padding: 0.6rem 0.5rem;
@@ -860,8 +906,8 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #1a1a2e;
-      border-top: 2px solid var(--psg-red);
+      background: #111827;
+      border-top: 1px solid rgba(255,255,255,0.06);
       z-index: 100;
       padding: 0.4rem 0;
       padding-bottom: env(safe-area-inset-bottom, 0.4rem);
@@ -888,7 +934,7 @@
       text-transform: uppercase;
       transition: color 0.2s;
     }
-    .bottom-nav-btn.active { color: var(--psg-red); }
+    .bottom-nav-btn.active { color: var(--psg-red); border-top: 2px solid var(--psg-red); margin-top: -2px; }
     .bottom-nav-btn:hover { color: var(--retro-cream); }
     .bottom-nav-icon { font-size: 1.2rem; line-height: 1; }
 
@@ -973,16 +1019,13 @@
 
   <!-- ========== HERO ========== -->
   <header class="hero">
-    <div style="position:relative;z-index:1;margin-bottom:0.3rem"><img src="/logo.png" alt="Ligue des Pieds Carres" style="width:65px;height:65px;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5))"></div>
-    <div class="hero-title">PARIS <span>STATS</span>-GERMAIN</div>
-    <div class="hero-subtitle">By Ligue des Pieds Carres</div>
-    <div class="hero-tagline">Champions mon frere.</div>
-    <div style="margin-top:0.6rem;position:relative;z-index:1">
-      <a href="https://en.wikipedia.org/wiki/2025_UEFA_Champions_League_final" target="_blank"
-         style="color:var(--text-muted);font-size:0.7rem;text-decoration:none;border-bottom:1px dashed var(--text-muted);padding-bottom:1px;transition:all 0.3s;letter-spacing:2px;text-transform:uppercase;font-family:'Oswald',sans-serif"
-         onmouseover="this.style.color='var(--psg-gold)';this.style.borderColor='var(--psg-gold)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--text-muted)'">
-        Vous cherchez le Tracker de Marseille ?
-      </a>
+    <a href="https://en.wikipedia.org/wiki/2025_UEFA_Champions_League_final" target="_blank" class="om-btn">Tracker OM</a>
+    <div class="hero-inner">
+      <img src="/logo.png" alt="Ligue des Pieds Carres" class="hero-logo">
+      <div class="hero-text">
+        <div class="hero-title">PARIS <span>STATS</span>-GERMAIN</div>
+        <div class="hero-tagline">Champions mon frere.</div>
+      </div>
     </div>
   </header>
 
@@ -1055,9 +1098,8 @@
   <!-- ========== FOOTER ========== -->
   <footer class="footer">
     <div class="chant">ICI C'EST PARIS</div>
-    <p>Paris Stats-Germain par Ligue des Pieds Carres &mdash; Pour le chambrage en fantasy uniquement</p>
     <p style="margin-top:0.3rem">Donnees : Sofascore &bull; Non affilie au PSG</p>
-    <p style="margin-top:0.3rem; color:var(--psg-gold)">Capacite du Parc des Princes : 47 929 coeurs</p>
+    <p style="margin-top:0.5rem; color:var(--text-muted);font-size:0.65rem">&copy; 2026 David Pointeau &bull; Ligue des Pieds Carres</p>
   </footer>
 
   <!-- ========== MOBILE BOTTOM NAV ========== -->
