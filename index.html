@@ -140,9 +140,7 @@
       align-items: center;
       gap: 0.4rem;
       padding: 0.6rem 1.5rem;
-      background: rgba(0, 31, 63, 0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: #1a1a2e;
       border-bottom: 2px solid var(--psg-red);
       flex-wrap: wrap;
       position: sticky;
@@ -152,8 +150,8 @@
 
     .nav-tab {
       background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--retro-cream);
       padding: 0.45rem 1.2rem;
       border-radius: 2px;
       cursor: pointer;
@@ -862,9 +860,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0, 31, 63, 0.97);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: #1a1a2e;
       border-top: 2px solid var(--psg-red);
       z-index: 100;
       padding: 0.4rem 0;
@@ -1669,16 +1665,19 @@ async function openMatch(fixtureId) {
     </div>
   `;
 
-  playersEl.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement des stats joueurs...</div>';
-
-  try {
-    const players = state.demoMode
-      ? getDemoPlayerStats()
-      : await fetchPlayerStats(fixtureId);
-
-    renderPlayerTable(playersEl, players);
-  } catch (e) {
-    playersEl.innerHTML = `<p style="color:var(--psg-red)">Erreur de chargement : ${e.message}</p>`;
+  // Use already-loaded static data if available, otherwise fetch
+  if (state.playerStats[fixtureId]) {
+    renderPlayerTable(playersEl, state.playerStats[fixtureId]);
+  } else {
+    playersEl.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement des stats joueurs...</div>';
+    try {
+      const players = state.demoMode
+        ? getDemoPlayerStats()
+        : await fetchPlayerStats(fixtureId);
+      renderPlayerTable(playersEl, players);
+    } catch (e) {
+      playersEl.innerHTML = `<p style="color:var(--psg-red)">Erreur de chargement : ${e.message}</p>`;
+    }
   }
 }
 
