@@ -57,66 +57,73 @@
     /* ========== HEADER / HERO ========== */
     .hero {
       position: relative;
-      background: var(--psg-navy);
-      padding: 2.5rem 2rem 2rem;
+      background: linear-gradient(135deg, var(--psg-navy-dark) 0%, var(--psg-navy) 50%, var(--psg-navy-dark) 100%);
+      padding: 1.5rem 2rem 1.2rem;
       text-align: center;
       overflow: hidden;
-      border-bottom: 4px solid var(--psg-red);
     }
 
-    /* Hechter center stripe */
+    /* Animated Hechter stripe */
     .hero::before {
       content: '';
       position: absolute;
-      top: 0; bottom: 0;
+      top: -50%; bottom: -50%;
       left: 50%;
       transform: translateX(-50%);
-      width: 80px;
+      width: 120px;
       background: linear-gradient(180deg,
-        var(--psg-red) 0%,
-        var(--psg-red) 100%
+        transparent 0%,
+        rgba(218, 41, 28, 0.15) 20%,
+        rgba(218, 41, 28, 0.3) 50%,
+        rgba(218, 41, 28, 0.15) 80%,
+        transparent 100%
       );
-      opacity: 0.25;
       pointer-events: none;
+      animation: stripeGlow 4s ease-in-out infinite alternate;
     }
 
-    /* Hechter side white trim lines */
+    @keyframes stripeGlow {
+      0% { opacity: 0.5; width: 100px; }
+      100% { opacity: 1; width: 140px; }
+    }
+
+    /* Side trim */
     .hero::after {
       content: '';
       position: absolute;
       top: 0; bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 90px;
-      border-left: 2px solid rgba(255,255,255,0.1);
-      border-right: 2px solid rgba(255,255,255,0.1);
+      width: 130px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.08);
       pointer-events: none;
     }
 
     .hero-title {
-      font-family: 'Oswald', 'Bebas Neue', Impact, sans-serif;
-      font-size: 3.2rem;
+      font-family: 'Oswald', Impact, sans-serif;
+      font-size: 2.6rem;
       font-weight: 600;
-      letter-spacing: 5px;
+      letter-spacing: 6px;
       color: var(--retro-cream);
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.4), 0 0 20px rgba(218, 41, 28, 0.3);
       position: relative;
       z-index: 1;
       text-transform: uppercase;
+      line-height: 1;
     }
 
     .hero-title span {
       color: var(--psg-red);
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 25px rgba(218, 41, 28, 0.5);
+      text-shadow: 0 0 30px rgba(218, 41, 28, 0.6);
     }
 
     .hero-subtitle {
       font-family: 'Oswald', sans-serif;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       font-weight: 400;
-      color: var(--text-secondary);
-      margin-top: 0.4rem;
-      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      letter-spacing: 4px;
       text-transform: uppercase;
       position: relative;
       z-index: 1;
@@ -124,10 +131,10 @@
 
     .hero-tagline {
       font-family: 'Oswald', sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 400;
       color: var(--psg-gold);
-      margin-top: 0.6rem;
+      margin-top: 0.4rem;
       letter-spacing: 3px;
       text-transform: uppercase;
       position: relative;
@@ -138,32 +145,37 @@
     .nav-tabs {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.8rem 2rem;
-      background: var(--psg-navy-dark);
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.5rem;
+      background: rgba(0, 31, 63, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-bottom: 2px solid var(--psg-red);
       flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .nav-tab {
       background: transparent;
-      border: 2px solid var(--border);
-      color: var(--text-secondary);
-      padding: 0.5rem 1.5rem;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.45rem 1.2rem;
       border-radius: 2px;
       cursor: pointer;
-      font-family: 'Oswald', 'Bebas Neue', sans-serif;
-      font-size: 0.9rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
       font-weight: 500;
       letter-spacing: 2px;
       text-transform: uppercase;
       transition: all 0.2s;
     }
 
-    .nav-tab:hover { border-color: var(--psg-red); color: var(--text-primary); }
+    .nav-tab:hover { color: var(--retro-cream); }
     .nav-tab.active {
       background: var(--psg-red);
-      border-color: var(--psg-red);
       color: white;
     }
 
@@ -717,11 +729,11 @@
 
     /* Mobile */
     @media (max-width: 600px) {
-      .hero { padding: 1.5rem 1rem 1.2rem; }
-      .hero-title { font-size: 2rem; letter-spacing: 2px; }
-      .hero-subtitle { font-size: 0.8rem; }
-      .hero-tagline { font-size: 0.7rem; }
-      .hero::after { display: none; }
+      .hero { padding: 1rem 0.8rem 0.8rem; }
+      .hero-title { font-size: 1.6rem; letter-spacing: 3px; }
+      .hero-subtitle { font-size: 0.6rem; letter-spacing: 2px; }
+      .hero-tagline { font-size: 0.6rem; }
+      .hero::before, .hero::after { display: none; }
 
       .nav-tabs {
         padding: 0.6rem 0.5rem;
@@ -732,8 +744,8 @@
         flex-wrap: nowrap;
       }
       .nav-tab {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.85rem;
+        padding: 0.4rem 0.7rem;
+        font-size: 0.7rem;
         white-space: nowrap;
         flex-shrink: 0;
       }
@@ -888,10 +900,10 @@
     <div class="hero-title">PARIS <span>STATS</span>-GERMAIN</div>
     <div class="hero-subtitle">By Ligue des Pieds Carres</div>
     <div class="hero-tagline">Champions mon frere.</div>
-    <div style="margin-top:1rem;position:relative;z-index:1">
+    <div style="margin-top:0.6rem;position:relative;z-index:1">
       <a href="https://en.wikipedia.org/wiki/2025_UEFA_Champions_League_final" target="_blank"
-         style="color:var(--text-secondary);font-size:1.05rem;text-decoration:none;border-bottom:2px dashed var(--psg-gold);padding-bottom:2px;transition:all 0.3s;font-weight:600"
-         onmouseover="this.style.color='var(--psg-gold)';this.style.borderBottomStyle='solid'" onmouseout="this.style.color='var(--text-secondary)';this.style.borderBottomStyle='dashed'">
+         style="color:var(--text-muted);font-size:0.7rem;text-decoration:none;border-bottom:1px dashed var(--text-muted);padding-bottom:1px;transition:all 0.3s;letter-spacing:2px;text-transform:uppercase;font-family:'Oswald',sans-serif"
+         onmouseover="this.style.color='var(--psg-gold)';this.style.borderColor='var(--psg-gold)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--text-muted)'">
         Vous cherchez le Tracker de Marseille ?
       </a>
     </div>
@@ -902,7 +914,7 @@
     <button class="nav-tab active" data-view="matches">Les Matchs</button>
     <button class="nav-tab" data-view="team">Vue d'Equipe</button>
     <button class="nav-tab" data-view="players">Les Joueurs</button>
-    <select id="season-select" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;cursor:pointer;margin-left:auto">
+    <select id="season-select" style="background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:0.4rem 0.8rem;border-radius:2px;font-family:'Oswald',sans-serif;font-size:0.75rem;letter-spacing:2px;cursor:pointer;margin-left:auto;text-transform:uppercase">
       <option value="2025">Saison 2025-26</option>
       <option value="2024">Saison 2024-25</option>
       <option value="2023">Saison 2023-24</option>
@@ -1524,40 +1536,62 @@ async function openMatch(fixtureId) {
   }
 }
 
+// Column sort state
+let _sortCol = null;
+let _sortDir = 'desc';
+
+function getStatValue(p, col) {
+  const s = p.statistics[0];
+  const g = s.games || {};
+  const map = {
+    0: p.player.name,
+    1: g.minutes || 0,
+    2: parseFloat(g.rating) || 0,
+    3: s.goals?.total || 0,
+    4: s.goals?.assists || 0,
+    5: s.passes?.total || 0,
+    6: parseInt(s.passes?.accuracy) || 0,
+    7: s.passes?.key || 0,
+    8: s.shots?.total || 0,
+    9: s.shots?.on || 0,
+    10: s.tackles?.total || 0,
+    11: s.tackles?.interceptions || 0,
+    12: s.duels?.won || 0,
+    13: s.dribbles?.success || 0,
+    14: s.fouls?.committed || 0,
+    15: (s.cards?.yellow || 0) + (s.cards?.red || 0) * 10,
+  };
+  return map[col] ?? 0;
+}
+
 function renderPlayerTable(container, players) {
   if (!players || !players.length) {
     container.innerHTML = '<p style="color:var(--text-muted)">Aucune donnee joueur disponible pour ce match.</p>';
     return;
   }
 
-  // Sort: starters first (by minutes desc), then subs
+  // Store players for re-sorting
+  state._currentMatchPlayers = players;
+  state._currentMatchContainer = container;
+
   const sorted = [...players].sort((a, b) => {
-    const mA = a.statistics[0]?.games?.minutes || 0;
-    const mB = b.statistics[0]?.games?.minutes || 0;
-    return mB - mA;
+    if (_sortCol !== null) {
+      const vA = getStatValue(a, _sortCol);
+      const vB = getStatValue(b, _sortCol);
+      const cmp = typeof vA === 'string' ? vA.localeCompare(vB) : vA - vB;
+      return _sortDir === 'desc' ? -cmp : cmp;
+    }
+    return (b.statistics[0]?.games?.minutes || 0) - (a.statistics[0]?.games?.minutes || 0);
   });
+
+  const cols = ['Joueur','Min','Note','Buts','Passes D','Passes','Pass%','Pass Cle','Tirs','Cadres','Tacles','Intercept','Duels G','Dribbles','Fautes','Cartons'];
 
   container.innerHTML = `
     <div class="player-table-wrapper">
-      <table class="player-table">
+      <table class="player-table" id="match-stats-table">
         <thead>
           <tr>
-            <th>Joueur</th>
-            <th>Min</th>
-            <th>Note</th>
-            <th>Buts</th>
-            <th>Passes D</th>
-            <th>Passes</th>
-            <th>Pass%</th>
-            <th>Pass Cle</th>
-            <th>Tirs</th>
-            <th>Cadres</th>
-            <th>Tacles</th>
-            <th>Intercept</th>
-            <th>Duels G</th>
-            <th>Dribbles</th>
-            <th>Fautes</th>
-            <th>Cartons</th>
+            ${cols.map((c, i) => `<th onclick="sortMatchTable(${i})" style="cursor:pointer" class="${_sortCol === i ? 'sorted' : ''}">${c}${_sortCol === i ? (_sortDir === 'desc' ? ' &#9660;' : ' &#9650;') : ''}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
@@ -1604,6 +1638,18 @@ function renderPlayerTable(container, players) {
       </table>
     </div>
   `;
+}
+
+function sortMatchTable(colIndex) {
+  if (_sortCol === colIndex) {
+    _sortDir = _sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    _sortCol = colIndex;
+    _sortDir = colIndex === 0 ? 'asc' : 'desc'; // name ascending, stats descending
+  }
+  if (state._currentMatchPlayers && state._currentMatchContainer) {
+    renderPlayerTable(state._currentMatchContainer, state._currentMatchPlayers);
+  }
 }
 
 // =============================================================================
@@ -2024,12 +2070,12 @@ function openPlayerDetail(playerId) {
               </tr>
             </thead>
             <tbody>
-              ${matches.map(m => {
+              ${[...matches].reverse().map(m => {
                 const s = m.stats;
                 const r = parseFloat(s.games?.rating) || 0;
                 const rCls = r >= 7.5 ? 'rating-good' : r >= 6.5 ? 'rating-avg' : 'rating-bad';
                 return `<tr>
-                  <td>${new Date(m.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</td>
+                  <td>${new Date(m.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
                   <td>${m.opponent || '?'}</td>
                   <td>${s.games?.minutes || '-'}</td>
                   <td><span class="rating-badge ${rCls}">${r ? r.toFixed(1) : '-'}</span></td>
