@@ -2359,16 +2359,19 @@ function openPlayerDetail(playerId) {
     }), '#d4af37')
   ));
 
-  // Async: load Wikipedia bio
+  // Async: load Wikipedia bio and extract personal details
   fetchWikiFacts(info.name).then(wiki => {
     const bioEl = document.getElementById('wiki-bio');
     if (!bioEl) return;
     if (wiki?.extract) {
-      // Take first 2 sentences max
-      const sentences = wiki.extract.split('. ').slice(0, 2).join('. ') + '.';
-      bioEl.innerHTML = `<span style="color:var(--psg-gold);font-weight:600">Wikipedia :</span> ${sentences}`;
+      const facts = extractPersonalFacts(wiki.extract, info.name);
+      if (facts.length) {
+        bioEl.innerHTML = facts.map(f => `<span style="display:inline-block;background:rgba(0,59,111,0.4);padding:0.2rem 0.6rem;border-radius:2px;margin:0.15rem 0.2rem;font-style:normal;font-size:0.78rem">${f}</span>`).join('');
+      } else {
+        bioEl.innerHTML = '';
+      }
     } else {
-      bioEl.innerHTML = '<span style="color:var(--text-muted)">Bio Wikipedia non disponible.</span>';
+      bioEl.innerHTML = '';
     }
   });
 }
@@ -2417,12 +2420,9 @@ async function loadAllPlayerStats() {
   const unloaded = state.fixtures.filter(f => !state.playerStats[f.fixture.id]);
 
   if (!unloaded.length) {
-    toast('Toutes les stats sont deja chargees !');
     renderPlayersListView();
     return;
   }
-
-  toast(`Chargement de ${unloaded.length} matchs... (${unloaded.length} appels API)`);
 
   for (const f of unloaded) {
     try {
@@ -2454,6 +2454,51 @@ function getPlayerPhoto(player) {
 
 function getPlayerNickname(name) {
   return PLAYER_NICKNAMES[name] || null;
+}
+
+function extractPersonalFacts(text, playerName) {
+  const facts = [];
+  const t = text;
+  const firstName = playerName.split(' ').pop();
+
+  // Birth location
+  const birthMatch = t.match(/(?:born|ne|nee|ne le|nee le)\s.*?(?:in|a|au)\s+([A-Z][^,.()]+)/i)
+    || t.match(/originaire\s+(?:de|du|d')\s+([A-Z][^,.()]+)/i);
+  if (birthMatch) facts.push(`Ne a ${birthMatch[1].trim()}`);
+
+  // Birth date / age
+  const ageMatch = t.match(/ne le\s+(\d{1,2}\s+\w+\s+\d{4})/i)
+    || t.match(/born\s+(\d{1,2}\s+\w+\s+\d{4})/i)
+    || t.match(/born\s+(\w+\s+\d{1,2},?\s+\d{4})/i);
+  if (ageMatch) facts.push(`Date de naissance : ${ageMatch[1]}`);
+
+  // First/youth club
+  const youthMatch = t.match(/(?:youth|jeune|formation|forme|debute|commence|rejoint)\s+.*?(?:at|a|au|chez|de)\s+(?:le\s+|la\s+|l')?([A-Z][A-Za-z\s.-]+?)(?:\s+(?:before|avant|puis|en|a l|,|\.))/i);
+  if (youthMatch) facts.push(`Formation : ${youthMatch[1].trim()}`);
+
+  // Nationality from text
+  const natMatch = t.match(/(?:international|joueur|footballeur)\s+([\w-]+(?:ais|ien|ol|ain|ois|ard|ish|an|ese))/i);
+  if (natMatch) facts.push(`International ${natMatch[1]}`);
+
+  // Famous relative / family
+  const familyMatch = t.match(/(?:son|brother|father|nephew|cousin|fils|frere|pere|neveu)\s+(?:of|de|du|d')\s+([A-Z][^,.]+)/i)
+    || t.match(/([A-Z][A-Za-z\s]+?)\s+(?:is|est)\s+(?:his|son|sa)\s+(?:brother|father|frere|pere)/i);
+  if (familyMatch) facts.push(`Famille : ${familyMatch[1].trim()}`);
+
+  // Transfer fee / record
+  const feeMatch = t.match(/(\d+[\s.]?\d*\s*(?:million|M)(?:\s*(?:euros|EUR|pounds|GBP|\u20ac|\xa3))?)/i);
+  if (feeMatch) facts.push(`Transfert : ${feeMatch[1]}`);
+
+  // Previous notable clubs (look for well-known club names)
+  const clubs = ['Barcelona', 'Real Madrid', 'Manchester', 'Liverpool', 'Chelsea', 'Bayern', 'Juventus', 'Inter Milan', 'AC Milan', 'Arsenal', 'Atletico', 'Benfica', 'Porto', 'Dortmund', 'Lyon', 'Marseille', 'Monaco', 'Lille', 'Rennes', 'Nantes', 'Sporting', 'Roma', 'Napoli', 'Tottenham'];
+  const mentioned = clubs.filter(c => t.includes(c));
+  if (mentioned.length > 0) facts.push(`Clubs precedents : ${mentioned.join(', ')}`);
+
+  // International caps
+  const capsMatch = t.match(/(\d+)\s+(?:caps|selections|apparitions|fois)/i);
+  if (capsMatch && parseInt(capsMatch[1]) > 5) facts.push(`${capsMatch[1]} selections internationales`);
+
+  return facts;
 }
 
 // =============================================================================
@@ -2845,10 +2890,7 @@ async function initApp() {
     }
 
     const statsLoaded = Object.keys(state.playerStats).length;
-    if (statsLoaded > 0) {
-      toast(`${state.fixtures.length} matchs, ${statsLoaded} avec stats joueurs. Allez Paris !`);
-    } else {
-      toast(`${state.fixtures.length} matchs trouves. Chargement des stats joueurs...`);
+    if (statsLoaded === 0) {
       if (!state.demoMode) {
         fetchSquadInfo();
         autoLoadAllPlayerStats();
@@ -2875,15 +2917,12 @@ async function autoLoadAllPlayerStats() {
     );
 
     loaded += results.filter(r => r.status === 'fulfilled').length;
-    toast(`Stats joueurs : ${loaded}/${total}`);
 
     // Progressive render: rebuild player data and update visible views
     buildAllPlayerData();
     if (state.currentView === 'team') renderTeamView();
     if (state.currentView === 'players') renderPlayersListView();
   }
-
-  toast(`${loaded} matchs charges. Allez Paris !`);
 }
 
 // Season selector
@@ -2896,7 +2935,6 @@ document.getElementById('season-select').addEventListener('change', (e) => {
     buildAllPlayerData();
     renderMatches();
     const statsCount = Object.keys(state.playerStats).length;
-    toast(`Saison ${state.selectedSeason}-${String(state.selectedSeason + 1).slice(2)} : ${state.fixtures.length} matchs, ${statsCount} avec stats`);
     if (state.currentView === 'team') renderTeamView();
     if (state.currentView === 'players') renderPlayersListView();
   } else {
