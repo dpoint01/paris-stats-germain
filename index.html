@@ -824,6 +824,94 @@
       .player-table th { font-size: 0.55rem; }
     }
 
+    /* ========== BREADCRUMB ========== */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0;
+      margin-bottom: 0.8rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .breadcrumb a {
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .breadcrumb a:hover { color: var(--psg-red); }
+    .breadcrumb .sep { color: var(--border); }
+    .breadcrumb .current { color: var(--retro-cream); }
+
+    /* ========== PLAYER SEARCH ========== */
+    .player-search {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.5rem 0.8rem;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .player-search:focus { outline: none; border-color: var(--psg-red); }
+    .player-search::placeholder { color: var(--text-muted); }
+
+    /* ========== MOBILE BOTTOM NAV ========== */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 31, 63, 0.97);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 2px solid var(--psg-red);
+      z-index: 100;
+      padding: 0.4rem 0;
+      padding-bottom: env(safe-area-inset-bottom, 0.4rem);
+    }
+    .bottom-nav-inner {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .bottom-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.3rem 0.5rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 400;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .bottom-nav-btn.active { color: var(--psg-red); }
+    .bottom-nav-btn:hover { color: var(--retro-cream); }
+    .bottom-nav-icon { font-size: 1.2rem; line-height: 1; }
+
+    @media (max-width: 600px) {
+      .bottom-nav { display: block; }
+      .nav-tabs { display: none; }
+      .main { padding-bottom: 5rem; }
+    }
+
     /* ========== HIDDEN ========== */
     .hidden { display: none !important; }
 
@@ -940,7 +1028,11 @@
 
     <!-- MATCH DETAIL VIEW -->
     <div id="view-match-detail" class="hidden">
-      <button class="back-btn" onclick="showView('matches')">&larr; Retour aux matchs</button>
+      <div class="breadcrumb">
+        <a onclick="showView('matches')">Les Matchs</a>
+        <span class="sep">/</span>
+        <span class="current" id="breadcrumb-match">Match</span>
+      </div>
       <div id="match-detail-header"></div>
       <div class="section-title" style="margin-top:1rem"><span class="accent">Stats</span>&nbsp;des Joueurs</div>
       <div id="match-players-container"></div>
@@ -958,13 +1050,17 @@
     <!-- PLAYERS VIEW -->
     <div id="view-players" class="hidden">
       <div class="section-title"><span class="accent">Les</span>&nbsp;Joueurs</div>
-      <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;">Cliquez sur un joueur pour voir ses tendances sur les derniers matchs</p>
+      <input type="text" class="player-search" id="player-search" placeholder="Rechercher un joueur..." oninput="filterPlayerList(this.value)">
       <div id="players-list-container"></div>
     </div>
 
     <!-- PLAYER DETAIL VIEW -->
     <div id="view-player-detail" class="hidden">
-      <button class="back-btn" onclick="showView('players')">&larr; Retour aux joueurs</button>
+      <div class="breadcrumb">
+        <a onclick="showView('players')">Les Joueurs</a>
+        <span class="sep">/</span>
+        <span class="current" id="breadcrumb-player">Joueur</span>
+      </div>
       <div id="player-detail-container"></div>
     </div>
 
@@ -977,6 +1073,24 @@
     <p style="margin-top:0.3rem">Donnees : Sofascore &bull; Non affilie au PSG</p>
     <p style="margin-top:0.3rem; color:var(--psg-gold)">Capacite du Parc des Princes : 47 929 coeurs</p>
   </footer>
+
+  <!-- ========== MOBILE BOTTOM NAV ========== -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bottom-nav-btn active" data-view="matches" onclick="showView('matches')">
+        <span class="bottom-nav-icon">&#9917;</span>
+        Matchs
+      </button>
+      <button class="bottom-nav-btn" data-view="team" onclick="showView('team')">
+        <span class="bottom-nav-icon">&#9876;</span>
+        Equipe
+      </button>
+      <button class="bottom-nav-btn" data-view="players" onclick="showView('players')">
+        <span class="bottom-nav-icon">&#9733;</span>
+        Joueurs
+      </button>
+    </div>
+  </nav>
 
 <script>
 // =============================================================================
@@ -1409,6 +1523,7 @@ function showView(view) {
   state.currentView = view;
   document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-btn').forEach(t => t.classList.remove('active'));
 
   const viewMap = {
     'matches': 'view-matches',
@@ -1421,14 +1536,49 @@ function showView(view) {
   const el = document.getElementById(viewMap[view]);
   if (el) el.classList.remove('hidden');
 
-  // Highlight nav tab
+  // Highlight top nav tab
   const tab = document.querySelector(`.nav-tab[data-view="${view}"]`);
   if (tab) tab.classList.add('active');
+
+  // Highlight bottom nav (map detail views to parent)
+  const bottomMap = { 'match-detail': 'matches', 'player-detail': 'players' };
+  const bottomView = bottomMap[view] || view;
+  const bottomBtn = document.querySelector(`.bottom-nav-btn[data-view="${bottomView}"]`);
+  if (bottomBtn) bottomBtn.classList.add('active');
+
+  // Scroll to top on view change
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Render view content
   if (view === 'team') renderTeamView();
   if (view === 'players') renderPlayersListView();
 }
+
+// Player search filter
+function filterPlayerList(query) {
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('#players-list-container .player-table tbody tr');
+  rows.forEach(row => {
+    const name = row.querySelector('.player-name')?.textContent?.toLowerCase() || '';
+    row.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
+// Swipe navigation (mobile)
+let _touchStartX = 0;
+const SWIPE_VIEWS = ['matches', 'team', 'players'];
+
+document.addEventListener('touchstart', e => { _touchStartX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - _touchStartX;
+  if (Math.abs(dx) < 80) return; // too short
+
+  const currentIdx = SWIPE_VIEWS.indexOf(state.currentView);
+  if (currentIdx === -1) return; // don't swipe on detail views
+
+  if (dx > 0 && currentIdx > 0) showView(SWIPE_VIEWS[currentIdx - 1]);
+  else if (dx < 0 && currentIdx < SWIPE_VIEWS.length - 1) showView(SWIPE_VIEWS[currentIdx + 1]);
+}, { passive: true });
 
 // Nav tab listeners
 document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -1498,10 +1648,14 @@ async function openMatch(fixtureId) {
   const fixture = state.fixtures.find(f => f.fixture.id === fixtureId);
   if (!fixture) return;
 
+  // Update breadcrumb
+  const home = fixture.teams.home;
+  const away = fixture.teams.away;
+  const bc = document.getElementById('breadcrumb-match');
+  if (bc) bc.textContent = `${home.name} vs ${away.name}`;
+
   const headerEl = document.getElementById('match-detail-header');
   const playersEl = document.getElementById('match-players-container');
-
-  const home = fixture.teams.home;
   const away = fixture.teams.away;
   const score = fixture.goals;
   const comp = COMP_NAMES[fixture.league.id] || { name: fixture.league.name, cls: 'other' };
@@ -1983,8 +2137,9 @@ function openPlayerDetail(playerId) {
   showView('player-detail');
   destroyCharts();
 
-  // Also highlight player detail nav
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  // Update breadcrumb
+  const bc = document.getElementById('breadcrumb-player');
+  if (bc) bc.textContent = matches[0].name;
 
   const container = document.getElementById('player-detail-container');
   const info = matches[0];
