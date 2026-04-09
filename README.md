@@ -1,24 +1,51 @@
-# Paris Stats-Germain
+<p align="center">
+  <img src="logo.png" alt="Ligue des Pieds Carres" width="100">
+</p>
 
-A retro-styled PSG stats tracker built for fantasy football league banter. Player-level match stats, trend charts, team aggregates, Wikipedia bios, and auto-generated fun facts. All in French, all in the spirit of the Parc des Princes.
+<h1 align="center">
+  <img src="https://img.shields.io/badge/PARIS-STATS--GERMAIN-DA291C?style=for-the-badge&labelColor=003b6f&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDJDNi41IDIgMiA2LjUgMiAxMnM0LjUgMTAgMTAgMTAgMTAtNC41IDEwLTEwUzE3LjUgMiAxMiAyeiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" alt="Paris Stats-Germain">
+</h1>
 
-**Live site:** [paris-stats-germain.vercel.app](https://paris-stats-germain.vercel.app)
+<p align="center">
+  <img src="https://img.shields.io/badge/Ligue_1-004170?style=flat-square" alt="Ligue 1">
+  <img src="https://img.shields.io/badge/Champions_League-003b6f?style=flat-square" alt="UCL">
+  <img src="https://img.shields.io/badge/Coupe_de_France-2d5a27?style=flat-square" alt="Coupe">
+  <img src="https://img.shields.io/badge/10+_Seasons-DA291C?style=flat-square" alt="Seasons">
+  <img src="https://img.shields.io/badge/585+_Matches-d4af37?style=flat-square&labelColor=003b6f" alt="Matches">
+</p>
+
+<p align="center">
+  PSG stats tracker for fantasy football league banter.<br>
+  Player-level match stats, trend charts, team aggregates, and Wikipedia bios.<br>
+  All in French. All in the spirit of the Parc des Princes.
+</p>
+
+<p align="center">
+  <a href="https://paris-stats-germain.vercel.app"><img src="https://img.shields.io/badge/LIVE_SITE-paris--stats--germain.vercel.app-DA291C?style=for-the-badge&labelColor=003b6f" alt="Live Site"></a>
+</p>
+
+---
+
+## Demo
+
+https://github.com/user-attachments/assets/demo.mp4
+
+<video src="demo.mp4" width="100%" autoplay loop muted playsinline></video>
 
 ## Features
 
-- **Match results** across all competitions (Ligue 1, Champions League, Coupe de France) with W/D/L indicators and team logos
-- **Player-level stats per match**: passes, tackles, shots, dribbles, duels, interceptions, fouls, Sofascore ratings
-- **Trend charts** per player (Chart.js): rating evolution, passing, defense, attack, dribbles, duels
-- **Team dashboard**: aggregated stats, form bar, top performers leaderboard
-- **Wikipedia bios**: auto-fetched from fr.wikipedia.org for each player
-- **Fun facts generator**: stats-derived insights in French, different every time
-- **Season selector**: switch between seasons
-- **Mobile responsive**: sticky player name column, horizontal-scrolling tables, touch-friendly nav
-- **Retro aesthetic**: inspired by the legendary Hechter/RTL era PSG kit. Oswald typography, sharp corners, center red stripe, vintage grain, pinstripe textures.
-
-## Screenshots
-
-> Add screenshots here: match list, player detail with charts, team dashboard, mobile view
+| Feature | Description |
+|---------|-------------|
+| **Match Results** | All competitions (Ligue 1, UCL, Coupe de France) with team logos, scores, V/N/D |
+| **Player Stats** | Per-match: passes, tackles, shots, dribbles, duels, interceptions, Sofascore ratings |
+| **Trend Charts** | Chart.js graphs per player: rating, passing, defense, attack, dribbles, duels |
+| **Team Dashboard** | Aggregated stats, form bar, top performers leaderboard |
+| **Wikipedia Bios** | Auto-fetched from fr.wikipedia.org: birthplace, clubs, nationality |
+| **Season Selector** | 10+ seasons of history, instant switching |
+| **Column Sorting** | Click any stat column to sort ascending/descending |
+| **Player Search** | Filter players by name |
+| **Mobile** | Bottom tab bar, swipe navigation, sticky player columns, responsive tables |
+| **Retro Aesthetic** | Hechter/RTL era PSG kit inspired. Oswald font, red stripe, vintage grain |
 
 ## Architecture
 
@@ -31,11 +58,20 @@ worker/index.js     Cloudflare Worker proxy (optional, for live API access)
 
 **Data flow:**
 
-1. `fetch.py` runs locally on your machine (uses `curl_cffi` for browser TLS impersonation)
-2. Fetches PSG match results, player stats, and squad info from Sofascore
-3. Saves everything to `data.json`
-4. `vercel --prod` deploys the static file alongside the HTML
-5. The app loads `data.json` on startup. Instant, no API calls needed.
+```
+Your laptop                          Vercel
+    |                                  |
+    |  python fetch.py --update        |
+    |  (curl_cffi + Sofascore)         |
+    |         |                        |
+    |    data.json                     |
+    |    (matches + stats + images)    |
+    |         |                        |
+    |  vercel --prod  --------------->  paris-stats-germain.vercel.app
+    |                                  |
+    |                           index.html loads data.json
+    |                           No API calls. Instant.
+```
 
 ## Getting Started
 
@@ -54,8 +90,8 @@ cd paris-stats-germain
 # Install the Python dependency
 pip install curl_cffi
 
-# Fetch PSG data
-python fetch.py
+# First time: full historical load (~10-15 min)
+python fetch.py --init
 
 # Preview locally
 open index.html
@@ -66,77 +102,68 @@ vercel --prod
 
 ### Updating data
 
-Run after each match day:
+After each match day:
 
 ```bash
-python fetch.py && vercel --prod
+python fetch.py --update && vercel --prod
 ```
 
-That's it. Takes about 30 seconds.
+30 seconds. That's it.
 
 ## Learnings: The Football Data API Landscape
 
-Building this project was a deep dive into the world of football data APIs. Here's what we found.
+Building this was a deep dive into football data APIs. Here's what we found.
 
 ### API-Football (api-sports.io)
 
-The most promising option on paper. Official API, 100 requests/day free tier, detailed player stats (passes, tackles, shots, dribbles, ratings).
+Official API, 100 requests/day free tier, detailed player stats.
 
-**The catch:** The free plan only covers seasons 2022-2024. No current season data. And the `last` parameter (to get most recent N matches) is a paid-only feature. Usable for historical data, but not for a live tracker without paying $30/month.
+**The catch:** Free plan only covers seasons 2022-2024. No current season data. The `last` parameter is paid-only. Usable for historical data, not a live tracker without $30/month.
 
 ### Sofascore
 
-The gold standard for match data. Per-player stats with 56 unique fields (xG, key passes, aerial duels, progressive carries, the works). Covers every competition, every season, updated in real-time.
+The gold standard. Per-player stats with 56 unique fields (xG, key passes, aerial duels, progressive carries). Every competition, every season, real-time.
 
-**The catch:** No official API. And they protect their data aggressively:
-
-- **CORS blocked**: browser cross-origin requests get no `Access-Control-Allow-Origin` header
-- **TLS fingerprinting**: server-side requests with standard HTTP libraries (curl, requests, fetch) get `403 Forbidden`
-- **Cloud IP blocking**: even with browser TLS impersonation (`curl_cffi`), requests from AWS (Vercel), Cloudflare Workers, and other cloud providers get blocked
-- **Cloudflare challenge**: requests from cloud IPs receive `{"error":{"code":403,"reason":"challenge"}}`
-
-**What we tried and what failed:**
+**The catch:** No official API. Aggressively protected:
 
 | Approach | Result |
 |----------|--------|
-| Vercel Node.js serverless function | 403 - cloud IP blocked |
-| Vercel Edge Runtime | 403 - cloud IP blocked |
-| Vercel Python + curl_cffi | 403 - cloud IP blocked |
-| Cloudflare Worker | 403 - cloud IP blocked |
+| Vercel Node.js serverless | `403` cloud IP blocked |
+| Vercel Edge Runtime | `403` cloud IP blocked |
+| Vercel Python + curl_cffi | `403` cloud IP blocked |
+| Cloudflare Worker | `403` cloud IP blocked |
 | corsproxy.io | Blocks server-side on free plan |
-| api.allorigins.win | 522 timeout |
+| api.allorigins.win | `522` timeout |
 | Direct browser fetch | CORS blocked |
+| **curl_cffi from residential IP** | **Works** |
 
-**What works:** `curl_cffi` from a residential IP (your laptop). That's it.
-
-This is why the project uses a local fetch script + static JSON approach. It's the only free, reliable way to get current-season Sofascore data.
+This is why the project uses a local fetch script + static JSON. The only free, reliable path.
 
 ### Other APIs evaluated
 
 | Source | Player stats? | Current season? | Free? | Verdict |
 |--------|:---:|:---:|:---:|---------|
-| **football-data.org** | No (goals/assists only) | Yes | Yes (10 req/min) | Good for fixtures, no player detail |
-| **StatsBomb Open Data** | Excellent (event-level) | No (3 old seasons) | Yes | Great for research, not live tracking |
-| **Understat** | Shots/xG only | Yes | Scraping only | Too narrow |
-| **FBref** | Excellent (StatsBomb-powered) | Yes | Scraping only | Rate-limited, fragile |
-| **Sportmonks** | Excellent | Yes | Ligue 1 requires paid plan | $29/month for Ligue 1 |
-| **FotMob** | Good | Yes | Internal API, Cloudflare-protected | Same blocking issues as Sofascore |
-| **OpenFootball** | No (scores only) | Yes | Yes | Too basic |
+| **football-data.org** | Goals/assists only | Yes | Yes | No player detail |
+| **StatsBomb Open Data** | Excellent | No (3 old seasons) | Yes | Not live |
+| **Understat** | Shots/xG only | Yes | Scraping | Too narrow |
+| **FBref** | Excellent | Yes | Scraping | Rate-limited |
+| **Sportmonks** | Excellent | Yes | Ligue 1 paid | $29/month |
+| **FotMob** | Good | Yes | Cloudflare-protected | Same as Sofascore |
 
 ### The takeaway
 
-If you want detailed, current-season football data for free: there is no clean, hosted API solution. The data is either paywalled (API-Football, Sportmonks), outdated (StatsBomb Open Data), or locked behind anti-bot protection (Sofascore, FotMob, WhoScored).
-
-The pragmatic path for a side project: run a local script with TLS impersonation, save to JSON, deploy statically. It works, it's free, and it takes 30 seconds to update.
+For detailed, current-season football data for free: there is no clean hosted API. The data is paywalled, outdated, or locked behind anti-bot protection. The pragmatic path: local script with TLS impersonation, save to JSON, deploy statically.
 
 ## Tech Stack
 
-- **Frontend**: Vanilla HTML/CSS/JS, no build step, no framework
-- **Charts**: Chart.js 4.x (CDN)
-- **Fonts**: Oswald + Inter (Google Fonts)
-- **Data**: Sofascore via curl_cffi
-- **Hosting**: Vercel (free tier)
-- **Proxy** (optional): Cloudflare Worker
+| | |
+|---|---|
+| **Frontend** | Vanilla HTML/CSS/JS, no framework, no build step |
+| **Charts** | Chart.js 4.x (CDN) |
+| **Fonts** | Oswald + Inter (Google Fonts) |
+| **Data** | Sofascore via curl_cffi |
+| **Hosting** | Vercel (free tier) |
+| **Images** | Base64-encoded in data.json (team logos + player photos) |
 
 ## License
 
@@ -144,4 +171,6 @@ MIT. See [LICENSE](LICENSE).
 
 ---
 
-*Champions mon frere.*
+<p align="center">
+  <img src="https://img.shields.io/badge/Champions_mon_frere.-d4af37?style=for-the-badge&labelColor=003b6f" alt="Champions mon frere.">
+</p>
