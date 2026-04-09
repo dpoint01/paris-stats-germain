@@ -753,10 +753,14 @@
       .match-team img { width: 24px; height: 24px; }
       .match-badge { font-size: 0.55rem; padding: 0.1rem 0.35rem; }
 
-      .team-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .stat-card { padding: 0.7rem 0.5rem; }
-      .stat-value { font-size: 1.6rem; }
-      .stat-label { font-size: 0.65rem; }
+      .team-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+      .stat-card { padding: 0.6rem 0.3rem; }
+      .stat-value { font-size: 1.4rem; }
+      .stat-label { font-size: 0.55rem; letter-spacing: 1px; }
+      .stat-sublabel { font-size: 0.55rem; }
+
+      .form-bar { flex-wrap: wrap; }
+      .form-dot { width: 22px; height: 22px; font-size: 0.6rem; }
 
       .charts-grid { grid-template-columns: 1fr; gap: 0.6rem; }
       .chart-box { padding: 0.7rem; }
@@ -1162,12 +1166,12 @@ function normalizeSofaEvent(event) {
       home: {
         id: event.homeTeam?.id,
         name: event.homeTeam?.name,
-        logo: state.images.teams[event.homeTeam?.id] || `https://api.sofascore.app/api/v1/team/${event.homeTeam?.id}/image`,
+        logo: state.images.teams[String(event.homeTeam?.id)] || '',
       },
       away: {
         id: event.awayTeam?.id,
         name: event.awayTeam?.name,
-        logo: state.images.teams[event.awayTeam?.id] || `https://api.sofascore.app/api/v1/team/${event.awayTeam?.id}/image`,
+        logo: state.images.teams[String(event.awayTeam?.id)] || '',
       },
     },
     goals: {
@@ -1193,7 +1197,7 @@ function normalizeSofaPlayerStats(lineups, psgIsHome) {
       player: {
         id: p.player?.id,
         name: p.player?.name || p.player?.shortName || '?',
-        photo: state.images.players[p.player?.id] || `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
+        photo: state.images.players[String(p.player?.id)] || '',
       },
       statistics: [{
         games: {
@@ -2252,10 +2256,7 @@ async function loadAllPlayerStats() {
 
 function getPlayerPhoto(player) {
   if (YOUNG_PHOTOS[player.name]) return YOUNG_PHOTOS[player.name];
-  // Use embedded base64 image from data.json if available
-  if (player.id && state.images.players[player.id]) return state.images.players[player.id];
-  // Fallback to Sofascore URL (works in browsers with right referrer)
-  if (player.id) return `https://api.sofascore.app/api/v1/player/${player.id}/image`;
+  if (player.id && state.images.players[String(player.id)]) return state.images.players[String(player.id)];
   return player.photo || '';
 }
 
@@ -2520,19 +2521,22 @@ async function loadStaticData() {
     const raw = await res.json();
     if (!raw.events || !raw.events.length) return false;
 
-    console.log(`Static data.json found (${raw.events.length} events, fetched ${raw.fetched_at})`);
+    console.log(`Static data.json: ${raw.events.length} events, fetched ${raw.fetched_at}`);
 
-    // Normalize events into fixtures
-    state.fixtures = raw.events.map(normalizeSofaEvent);
-    state.fixtures.sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date));
+    // Load embedded images first (needed by normalization)
+    if (raw.images) state.images = raw.images;
 
-    // Normalize lineups into playerStats
-    for (const fixture of state.fixtures) {
+    // Store ALL normalized fixtures and player stats (unfiltered)
+    state._allFixtures = raw.events.map(normalizeSofaEvent);
+    state._allFixtures.sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date));
+
+    state._allPlayerStats = {};
+    for (const fixture of state._allFixtures) {
       const fid = fixture.fixture.id;
       const lineup = raw.lineups?.[String(fid)];
       if (lineup) {
         const psgIsHome = fixture.teams.home.id === PSG_ID;
-        state.playerStats[fid] = normalizeSofaPlayerStats(lineup, psgIsHome);
+        state._allPlayerStats[fid] = normalizeSofaPlayerStats(lineup, psgIsHome);
       }
     }
 
@@ -2554,15 +2558,59 @@ async function loadStaticData() {
       }
     }
 
-    // Load embedded images
-    if (raw.images) {
-      state.images = raw.images;
-    }
+    // Populate season selector from available data
+    populateSeasonSelector();
+
+    // Apply season filter
+    filterBySeason();
 
     return true;
   } catch (e) {
     console.warn('No static data.json available:', e.message);
     return false;
+  }
+}
+
+function populateSeasonSelector() {
+  if (!state._allFixtures?.length) return;
+
+  // Detect all seasons present in the data
+  const seasons = new Set();
+  for (const f of state._allFixtures) {
+    const d = new Date(f.fixture.date);
+    const s = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+    seasons.add(s);
+  }
+
+  const sorted = [...seasons].sort((a, b) => b - a);
+  const sel = document.getElementById('season-select');
+  sel.innerHTML = sorted.map(s =>
+    `<option value="${s}"${s === state.selectedSeason ? ' selected' : ''}>Saison ${s}-${String(s + 1).slice(2)}</option>`
+  ).join('');
+
+  // If current season not in data, select the most recent available
+  if (!seasons.has(state.selectedSeason)) {
+    state.selectedSeason = sorted[0];
+    sel.value = state.selectedSeason;
+  }
+}
+
+function filterBySeason() {
+  if (!state._allFixtures) return;
+
+  const start = new Date(state.selectedSeason, 7, 1);
+  const end = new Date(state.selectedSeason + 1, 6, 31);
+
+  state.fixtures = state._allFixtures.filter(f => {
+    const d = new Date(f.fixture.date);
+    return d >= start && d <= end;
+  });
+
+  state.playerStats = {};
+  for (const f of state.fixtures) {
+    if (state._allPlayerStats[f.fixture.id]) {
+      state.playerStats[f.fixture.id] = state._allPlayerStats[f.fixture.id];
+    }
   }
 }
 
@@ -2649,11 +2697,23 @@ async function autoLoadAllPlayerStats() {
 // Season selector
 document.getElementById('season-select').addEventListener('change', (e) => {
   state.selectedSeason = parseInt(e.target.value);
-  state.fixtures = [];
-  state.playerStats = {};
-  state.allPlayerData = {};
-  showView('matches');
-  initApp();
+
+  // If we have static data, just re-filter (instant, no API calls)
+  if (state._allFixtures) {
+    filterBySeason();
+    buildAllPlayerData();
+    renderMatches();
+    const statsCount = Object.keys(state.playerStats).length;
+    toast(`Saison ${state.selectedSeason}-${String(state.selectedSeason + 1).slice(2)} : ${state.fixtures.length} matchs, ${statsCount} avec stats`);
+    if (state.currentView === 'team') renderTeamView();
+    if (state.currentView === 'players') renderPlayersListView();
+  } else {
+    state.fixtures = [];
+    state.playerStats = {};
+    state.allPlayerData = {};
+    showView('matches');
+    initApp();
+  }
 });
 
 // Auto-boot
