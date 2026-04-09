@@ -17,7 +17,6 @@
 <p align="center">
   PSG stats tracker for fantasy football league banter.<br>
   Player-level match stats, trend charts, team aggregates, and Wikipedia bios.<br>
-  All in French. All in the spirit of the Parc des Princes.
 </p>
 
 <p align="center">
@@ -28,7 +27,10 @@
 
 ## Demo
 
-https://github.com/user-attachments/assets/demo.mp4
+
+https://github.com/user-attachments/assets/b8b14f21-2fd5-4214-bfd0-d9bcf0d276bc
+
+
 
 <video src="demo.mp4" width="100%" autoplay loop muted playsinline></video>
 
