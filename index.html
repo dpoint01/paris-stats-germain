@@ -143,14 +143,11 @@
     }
 
     .om-btn {
-      position: absolute;
-      top: 50%; right: 1.5rem;
-      transform: translateY(-50%);
-      z-index: 2;
+      display: inline-block;
       background: linear-gradient(135deg, #2FAEE0, #009DDC);
       color: white;
       border: none;
-      padding: 0.35rem 0.8rem;
+      padding: 0.3rem 0.9rem;
       border-radius: 3px;
       font-family: 'Oswald', sans-serif;
       font-size: 0.6rem;
@@ -165,7 +162,7 @@
 
     .om-btn:hover {
       background: linear-gradient(135deg, #009DDC, #0077B6);
-      transform: translateY(-50%) scale(1.05);
+      transform: scale(1.05);
       box-shadow: 0 4px 15px rgba(47,174,224,0.4);
     }
 
@@ -767,8 +764,7 @@
       .hero-title { font-size: 1.3rem; letter-spacing: 3px; }
       .hero-tagline { font-size: 0.55rem; }
       .hero::before, .hero::after { display: none; }
-      .om-btn { position: static; transform: none; margin-top: 0.4rem; display: inline-block; font-size: 0.5rem; padding: 0.25rem 0.6rem; }
-      .om-btn:hover { transform: none; }
+      .om-btn { font-size: 0.5rem; padding: 0.2rem 0.5rem; }
       .hero-inner { flex-wrap: wrap; }
 
       .nav-tabs {
@@ -1019,13 +1015,15 @@
 
   <!-- ========== HERO ========== -->
   <header class="hero">
-    <a href="https://en.wikipedia.org/wiki/2025_UEFA_Champions_League_final" target="_blank" class="om-btn">Tracker OM</a>
     <div class="hero-inner">
       <img src="/logo.png" alt="Ligue des Pieds Carres" class="hero-logo">
       <div class="hero-text">
         <div class="hero-title">PARIS <span>STATS</span>-GERMAIN</div>
         <div class="hero-tagline">Champions mon frere.</div>
       </div>
+    </div>
+    <div style="position:relative;z-index:1;margin-top:0.6rem">
+      <a href="https://en.wikipedia.org/wiki/2025_UEFA_Champions_League_final" target="_blank" class="om-btn">Voir les stats de l'OM</a>
     </div>
   </header>
 
