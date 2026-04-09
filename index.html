@@ -1062,6 +1062,7 @@ let state = {
   allPlayerData: {}, // playerId -> array of match stats
   squadInfo: {},     // playerId -> { appearances, ... } from Sofascore
   wikiCache: {},     // playerName -> { extract, thumbnail }
+  images: { teams: {}, players: {} }, // id -> base64 data URI (from fetch.py)
 };
 
 // =============================================================================
@@ -1161,12 +1162,12 @@ function normalizeSofaEvent(event) {
       home: {
         id: event.homeTeam?.id,
         name: event.homeTeam?.name,
-        logo: `https://api.sofascore.app/api/v1/team/${event.homeTeam?.id}/image`,
+        logo: state.images.teams[event.homeTeam?.id] || `https://api.sofascore.app/api/v1/team/${event.homeTeam?.id}/image`,
       },
       away: {
         id: event.awayTeam?.id,
         name: event.awayTeam?.name,
-        logo: `https://api.sofascore.app/api/v1/team/${event.awayTeam?.id}/image`,
+        logo: state.images.teams[event.awayTeam?.id] || `https://api.sofascore.app/api/v1/team/${event.awayTeam?.id}/image`,
       },
     },
     goals: {
@@ -1192,7 +1193,7 @@ function normalizeSofaPlayerStats(lineups, psgIsHome) {
       player: {
         id: p.player?.id,
         name: p.player?.name || p.player?.shortName || '?',
-        photo: `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
+        photo: state.images.players[p.player?.id] || `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
       },
       statistics: [{
         games: {
@@ -2250,9 +2251,10 @@ async function loadAllPlayerStats() {
 // =============================================================================
 
 function getPlayerPhoto(player) {
-  // Check for custom young photo first
   if (YOUNG_PHOTOS[player.name]) return YOUNG_PHOTOS[player.name];
-  // Sofascore player image URL (works directly in img tags, no CORS issue)
+  // Use embedded base64 image from data.json if available
+  if (player.id && state.images.players[player.id]) return state.images.players[player.id];
+  // Fallback to Sofascore URL (works in browsers with right referrer)
   if (player.id) return `https://api.sofascore.app/api/v1/player/${player.id}/image`;
   return player.photo || '';
 }
@@ -2550,6 +2552,11 @@ async function loadStaticData() {
           };
         }
       }
+    }
+
+    // Load embedded images
+    if (raw.images) {
+      state.images = raw.images;
     }
 
     return true;
