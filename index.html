@@ -1143,10 +1143,10 @@ const BABY_MODE = true;
 const WIKI_TITLES = {
   'Gianluigi Donnarumma': 'Gianluigi_Donnarumma',
   'Achraf Hakimi': 'Achraf_Hakimi',
-  'Marquinhos': 'Marquinhos_(footballeur,_né_en_1994)',
+  'Marquinhos': 'Marquinhos',
   'Willian Pacho': 'Willian_Pacho',
-  'Nuno Mendes': 'Nuno_Mendes_(footballeur,_né_en_1998)',
-  'Vitinha': 'Vitinha_(footballeur,_né_en_2000)',
+  'Nuno Mendes': 'Nuno_Mendes_(football,_2002)',
+  'Vitinha': 'Vitinha_(football,_13-02-2000)',
   'Warren Zaïre-Emery': 'Warren_Zaïre-Emery',
   'Fabián Ruiz': 'Fabián_Ruiz',
   'Ousmane Dembélé': 'Ousmane_Dembélé',
@@ -2459,44 +2459,33 @@ function getPlayerNickname(name) {
 function extractPersonalFacts(text, playerName) {
   const facts = [];
   const t = text;
-  const firstName = playerName.split(' ').pop();
 
-  // Birth location
-  const birthMatch = t.match(/(?:born|ne|nee|ne le|nee le)\s.*?(?:in|a|au)\s+([A-Z][^,.()]+)/i)
-    || t.match(/originaire\s+(?:de|du|d')\s+([A-Z][^,.()]+)/i);
-  if (birthMatch) facts.push(`Ne a ${birthMatch[1].trim()}`);
+  // Birth date + location (French Wikipedia format: "né le X à Y")
+  const birthFull = t.match(/n[ée]\s+le\s+(\d{1,2}\s+\w+\s+\d{4})\s+[àa]\s+([^,(]+)/i);
+  if (birthFull) {
+    facts.push(`Ne le ${birthFull[1]} a ${birthFull[2].trim()}`);
+  } else {
+    const birthDate = t.match(/n[ée]\s+le\s+(\d{1,2}\s+\w+\s+\d{4})/i)
+      || t.match(/born\s+(?:on\s+)?(\d{1,2}\s+\w+\s+\d{4})/i);
+    if (birthDate) facts.push(`Ne le ${birthDate[1]}`);
 
-  // Birth date / age
-  const ageMatch = t.match(/ne le\s+(\d{1,2}\s+\w+\s+\d{4})/i)
-    || t.match(/born\s+(\d{1,2}\s+\w+\s+\d{4})/i)
-    || t.match(/born\s+(\w+\s+\d{1,2},?\s+\d{4})/i);
-  if (ageMatch) facts.push(`Date de naissance : ${ageMatch[1]}`);
+    const birthPlace = t.match(/n[ée].*?[àa]\s+([A-ZÀ-Ü][^,(]+)/i);
+    if (birthPlace) facts.push(`Origine : ${birthPlace[1].trim()}`);
+  }
 
-  // First/youth club
-  const youthMatch = t.match(/(?:youth|jeune|formation|forme|debute|commence|rejoint)\s+.*?(?:at|a|au|chez|de)\s+(?:le\s+|la\s+|l')?([A-Z][A-Za-z\s.-]+?)(?:\s+(?:before|avant|puis|en|a l|,|\.))/i);
-  if (youthMatch) facts.push(`Formation : ${youthMatch[1].trim()}`);
-
-  // Nationality from text
-  const natMatch = t.match(/(?:international|joueur|footballeur)\s+([\w-]+(?:ais|ien|ol|ain|ois|ard|ish|an|ese))/i);
+  // Nationality
+  const natMatch = t.match(/footballeur\s+international\s+([\wé-]+)/i)
+    || t.match(/international\s+([\wé-]+)/i);
   if (natMatch) facts.push(`International ${natMatch[1]}`);
 
-  // Famous relative / family
-  const familyMatch = t.match(/(?:son|brother|father|nephew|cousin|fils|frere|pere|neveu)\s+(?:of|de|du|d')\s+([A-Z][^,.]+)/i)
-    || t.match(/([A-Z][A-Za-z\s]+?)\s+(?:is|est)\s+(?:his|son|sa)\s+(?:brother|father|frere|pere)/i);
-  if (familyMatch) facts.push(`Famille : ${familyMatch[1].trim()}`);
-
-  // Transfer fee / record
-  const feeMatch = t.match(/(\d+[\s.]?\d*\s*(?:million|M)(?:\s*(?:euros|EUR|pounds|GBP|\u20ac|\xa3))?)/i);
-  if (feeMatch) facts.push(`Transfert : ${feeMatch[1]}`);
-
-  // Previous notable clubs (look for well-known club names)
-  const clubs = ['Barcelona', 'Real Madrid', 'Manchester', 'Liverpool', 'Chelsea', 'Bayern', 'Juventus', 'Inter Milan', 'AC Milan', 'Arsenal', 'Atletico', 'Benfica', 'Porto', 'Dortmund', 'Lyon', 'Marseille', 'Monaco', 'Lille', 'Rennes', 'Nantes', 'Sporting', 'Roma', 'Napoli', 'Tottenham'];
+  // Previous notable clubs
+  const clubs = ['Barcelone', 'Barcelona', 'Real Madrid', 'Manchester United', 'Manchester City', 'Liverpool', 'Chelsea', 'Bayern', 'Juventus', 'Inter Milan', 'AC Milan', 'Arsenal', 'Atlético', 'Atletico', 'Benfica', 'Porto', 'Borussia Dortmund', 'Dortmund', 'Olympique lyonnais', 'Lyon', 'Marseille', 'AS Monaco', 'Monaco', 'LOSC', 'Lille', 'Rennes', 'Nantes', 'Sporting', 'AS Roma', 'Roma', 'Napoli', 'Tottenham', 'Corinthians', 'São Paulo', 'Dinamo'];
   const mentioned = clubs.filter(c => t.includes(c));
-  if (mentioned.length > 0) facts.push(`Clubs precedents : ${mentioned.join(', ')}`);
+  if (mentioned.length > 0) facts.push(`Anciens clubs : ${[...new Set(mentioned)].join(', ')}`);
 
-  // International caps
-  const capsMatch = t.match(/(\d+)\s+(?:caps|selections|apparitions|fois)/i);
-  if (capsMatch && parseInt(capsMatch[1]) > 5) facts.push(`${capsMatch[1]} selections internationales`);
+  // Position
+  const posMatch = t.match(/(?:poste\s+d[e']|joue\s+au\s+poste\s+d[e'])\s*([\wé\s'-]+?)(?:\.|,|\s+au\s|\s+à\s)/i);
+  if (posMatch) facts.push(`Poste : ${posMatch[1].trim()}`);
 
   return facts;
 }
@@ -2510,11 +2499,8 @@ function generateFunFacts(matches, playerName) {
   const n = stats.length;
   if (n < 1) return [];
 
-  const pool = []; // candidate facts
   const sum = (fn) => stats.reduce((s, x) => s + (fn(x) || 0), 0);
-  const avg = (fn) => sum(fn) / n;
-  const firstName = playerName.split(' ').pop();
-  const pos = matches[0]?.position || '?';
+  const facts = [];
 
   const totalGoals = sum(x => x.goals?.total);
   const totalAssists = sum(x => x.goals?.assists);
@@ -2534,102 +2520,20 @@ function generateFunFacts(matches, playerName) {
   const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
   const maxRating = ratings.length ? Math.max(...ratings) : 0;
   const minRating = ratings.length ? Math.min(...ratings) : 0;
-  const avgPassesPerGame = totalPasses / n;
-  const goalsPerMatch = totalGoals / n;
+  const shotPct = totalShots ? Math.round(totalShotsOn / totalShots * 100) : 0;
   const duelPct = totalDuels ? Math.round(totalDuelsWon / totalDuels * 100) : 0;
-  const shotAccuracy = totalShots ? Math.round(totalShotsOn / totalShots * 100) : 0;
   const dribblePct = totalDribblesAttempt ? Math.round(totalDribblesOk / totalDribblesAttempt * 100) : 0;
 
-  // ---- ATTACKER FACTS ----
-  if (pos === 'F' || totalGoals > 0) {
-    if (totalGoals >= 10) pool.push(`${totalGoals} buts en ${n} matchs. ${firstName} fait le travail d'une equipe entiere.`);
-    else if (totalGoals >= 5) pool.push(`${firstName} envoie ${goalsPerMatch.toFixed(2)} but par match. Les filets tremblent rien qu'en le voyant.`);
-    else if (totalGoals >= 1 && totalGoals <= 2) pool.push(`Seulement ${totalGoals} but(s), mais chacun valait son pesant d'or.`);
-    if (totalGoals === 0 && totalShots > 15) pool.push(`${totalShots} tirs, 0 but. ${firstName} est en guerre ouverte avec les poteaux.`);
-    if (totalGoals === 0 && totalShots > 5 && totalShots <= 15) pool.push(`${totalShots} tentatives, toujours a sec. Le but esquive ${firstName} comme la plague.`);
-    if (totalShots > 0 && totalGoals > 0) pool.push(`Il faut ${(totalShots / totalGoals).toFixed(1)} tirs a ${firstName} pour marquer. ${totalShots / totalGoals < 4 ? 'Efficace.' : 'La patience paie.'}`);
-    if (shotAccuracy >= 60 && totalShots >= 5) pool.push(`${shotAccuracy}% de tirs cadres. ${firstName} vise les lucarnes, pas les nuages.`);
-    else if (shotAccuracy < 30 && totalShots >= 10) pool.push(`${shotAccuracy}% de tirs cadres. Meme les ramasseurs de balles sont en danger.`);
-  }
+  facts.push(`${n} matchs | Note moy. ${avgRating.toFixed(1)}/10 (min ${minRating.toFixed(1)}, max ${maxRating.toFixed(1)})`);
+  if (totalGoals || totalAssists) facts.push(`${totalGoals} buts, ${totalAssists} passes decisives (${(totalGoals / n).toFixed(2)} buts/match)`);
+  if (totalShots) facts.push(`${totalShots} tirs (${totalShotsOn} cadres, ${shotPct}% de precision)`);
+  if (totalPasses) facts.push(`${Math.round(totalPasses / n)} passes/match | ${totalKeyPasses} passes cles au total`);
+  if (totalTackles || totalInterceptions) facts.push(`${totalTackles} tacles, ${totalInterceptions} interceptions`);
+  if (totalDuels) facts.push(`${totalDuelsWon}/${totalDuels} duels gagnes (${duelPct}%)`);
+  if (totalDribblesAttempt) facts.push(`${totalDribblesOk}/${totalDribblesAttempt} dribbles reussis (${dribblePct}%)`);
+  if (totalFouls || totalFouled) facts.push(`${totalFouls} fautes commises, ${totalFouled} fautes subies`);
 
-  // ---- ASSISTS / CREATION ----
-  if (totalAssists >= 8) pool.push(`${totalAssists} passes decisives : ${firstName} fait marquer les autres comme un chef cuistot fait manger ses invites.`);
-  else if (totalAssists >= 4) pool.push(`${totalAssists} passes decisives. ${firstName} a un GPS integre pour trouver les attaquants.`);
-  if (totalKeyPasses >= 20) pool.push(`${totalKeyPasses} passes cles. Chaque ballon de ${firstName} est une lettre recommandee pour la surface.`);
-  else if (totalKeyPasses >= 10) pool.push(`${totalKeyPasses} passes cles sur ${n} matchs. ${firstName} distribue le jeu comme des cartes de poker.`);
-
-  // ---- MIDFIELD / PASSING ----
-  if (pos === 'M' || avgPassesPerGame > 40) {
-    if (avgPassesPerGame >= 70) pool.push(`${avgPassesPerGame.toFixed(0)} passes par match. ${firstName} joue au ping-pong tout seul.`);
-    else if (avgPassesPerGame >= 50) pool.push(`${avgPassesPerGame.toFixed(0)} passes de moyenne. Le ballon est en colocation chez ${firstName}.`);
-    if (totalPasses > 500) pool.push(`${totalPasses} passes au total cette saison. ${firstName} a plus de connexions que LinkedIn.`);
-  }
-
-  // ---- DEFENSE FACTS ----
-  if (pos === 'D' || totalTackles >= 10) {
-    if (totalTackles >= 30) pool.push(`${totalTackles} tacles. Les attaquants adverses verifient si ${firstName} est sur la feuille de match avant d'entrer.`);
-    else if (totalTackles >= 15) pool.push(`${totalTackles} tacles propres. ${firstName} fait le menage comme si le terrain etait sa cuisine.`);
-    if (totalInterceptions >= 20) pool.push(`${totalInterceptions} interceptions. ${firstName} capte les passes adverses comme d'autres captent le WiFi.`);
-    else if (totalInterceptions >= 8) pool.push(`${totalInterceptions} interceptions. ${firstName} lit les trajectoires mieux qu'un meteorologue.`);
-    if (totalTackles + totalInterceptions > 40) pool.push(`${totalTackles + totalInterceptions} actions defensives au total. Le mur de Berlin a pris sa retraite, ${firstName} a pris le relais.`);
-  }
-
-  // ---- GOALKEEPER FACTS ----
-  if (pos === 'G') {
-    pool.push(`Gardien : la derniere ligne avant le chaos. ${firstName} veille.`);
-    if (avgPassesPerGame >= 25) pool.push(`${avgPassesPerGame.toFixed(0)} passes par match pour un gardien. ${firstName} se prend pour un milieu de terrain.`);
-    if (avgRating >= 7.0) pool.push(`Note moyenne de ${avgRating.toFixed(1)} : les attaquants adverses le detestent.`);
-  }
-
-  // ---- DRIBBLE FACTS ----
-  if (totalDribblesAttempt >= 20) {
-    if (dribblePct >= 70) pool.push(`${dribblePct}% de dribbles reussis (${totalDribblesOk}/${totalDribblesAttempt}). Les defenseurs glissent rien qu'en le regardant.`);
-    else if (dribblePct >= 50) pool.push(`${totalDribblesOk} dribbles reussis sur ${totalDribblesAttempt} tentes. Pas mal, ${firstName}. Pas mal.`);
-    else pool.push(`${totalDribblesAttempt} dribbles tentes, ${dribblePct}% reussis. ${firstName} tente, tombe, se releve, retente. Respect.`);
-  } else if (totalDribblesOk >= 5) {
-    pool.push(`${totalDribblesOk} dribbles reussis. Discret mais efficace, ${firstName} fait parler ses pieds.`);
-  }
-
-  // ---- DUEL FACTS ----
-  if (totalDuels >= 50) {
-    if (duelPct >= 65) pool.push(`${duelPct}% de duels gagnes sur ${totalDuels} joues. ${firstName} ne recule devant personne.`);
-    else if (duelPct < 40) pool.push(`${duelPct}% de duels gagnes. ${firstName} est plus poete que guerrier. Et c'est OK.`);
-  } else if (totalDuels >= 20) {
-    pool.push(`${totalDuelsWon} duels gagnes sur ${totalDuels}. ${firstName} ${duelPct >= 55 ? 'gagne plus souvent qu\'il ne perd.' : 'se bat avec courage, sinon rien.'}`);
-  }
-
-  // ---- RATING FACTS ----
-  if (avgRating >= 8.0) pool.push(`Moyenne de ${avgRating.toFixed(1)}/10 : ${firstName} joue a un autre niveau que le commun des mortels.`);
-  else if (avgRating >= 7.0 && avgRating < 8.0) pool.push(`Note moyenne de ${avgRating.toFixed(1)}. Solide. Constant. ${firstName} ne triche pas.`);
-  else if (avgRating < 6.0 && n >= 3) pool.push(`${avgRating.toFixed(1)} de moyenne. Tout le monde a des mauvaises passes. Meme ${firstName}.`);
-
-  if (maxRating >= 9.0) pool.push(`Record : ${maxRating.toFixed(1)}/10 sur un match. Ce jour-la, ${firstName} a decide que c'etait son Parc.`);
-  if (n >= 4 && maxRating - minRating > 2.5) pool.push(`De ${minRating.toFixed(1)} a ${maxRating.toFixed(1)} : ${firstName} fait les montagnes russes. Attachez vos ceintures.`);
-  if (n >= 5) {
-    const stdDev = Math.sqrt(ratings.reduce((s, r) => s + Math.pow(r - avgRating, 2), 0) / ratings.length);
-    if (stdDev < 0.4) pool.push(`Ecart-type de ${stdDev.toFixed(2)} : ${firstName} a la regularite d'une horloge suisse.`);
-  }
-
-  // ---- FOUL FACTS ----
-  if (totalFouls >= 20) pool.push(`${totalFouls} fautes. ${firstName} se fait remarquer par les arbitres autant que par les supporters.`);
-  else if (totalFouls >= 10 && totalFouls < 20) pool.push(`${totalFouls} fautes : ${firstName} joue dur, mais pas trop.`);
-  if (totalFouled >= 20) pool.push(`${totalFouled} fautes subies. ${firstName} est tellement agacant qu'on ne peut s'empecher de le faucher.`);
-  else if (totalFouled >= 10) pool.push(`${totalFouled} fautes subies. Les adversaires n'arrivent pas a l'arreter proprement.`);
-
-  // ---- SQUAD INFO ----
-  const squad = state.squadInfo[matches[0]?.stats?.games?.captain ? 'captain' : ''] || {};
-
-  // Pick a diverse subset: max 4, try to cover different categories
-  if (pool.length <= 4) return pool;
-  const selected = [];
-  const usedCategories = new Set();
-  // Shuffle pool for variety across loads
-  const shuffled = pool.sort(() => Math.random() - 0.5);
-  for (const fact of shuffled) {
-    if (selected.length >= 4) break;
-    selected.push(fact);
-  }
-  return selected;
+  return facts;
 }
 
 function toast(msg) {
