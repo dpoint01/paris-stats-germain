@@ -15,8 +15,8 @@
 </p>
 
 <p align="center">
-  PSG stats tracker for fantasy football league banter.<br>
-  Player-level match stats, trend charts, team aggregates, and Wikipedia bios.<br>
+  PSG stats tracker.<br>
+  Player-level match stats, trend charts, team aggregates, and player bios.<br>
 </p>
 
 <p align="center">
